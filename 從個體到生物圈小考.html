@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4-1 生物生存的環境與生態系層次測驗</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, "Apple LiGothic Medium", "Microsoft JhengHei", sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #4caf50;
+            padding-bottom: 15px;
+        }
+        .quiz-item {
+            background: #fafafa;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            border-left: 5px solid #bdc3c7;
+            transition: all 0.3s ease;
+        }
+        .quiz-item.correct { border-left-color: #4caf50; background-color: #e8f5e9; }
+        .quiz-item.wrong { border-left-color: #f44336; background-color: #ffebee; }
+        .question {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .hint {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        .options {
+            display: block;
+        }
+        .option-btn {
+            display: block;
+            width: 100%;
+            background: #fff;
+            border: 1px solid #dcdde1;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: background 0.2s;
+            box-sizing: border-box;
+        }
+        .option-btn:hover:not([disabled]) {
+            background: #e1f5fe;
+            border-color: #29b6f6;
+        }
+        .option-btn[disabled] { cursor: not-allowed; }
+        .option-btn.selected-correct { background-color: #4caf50 !important; color: white; border-color: #4caf50; }
+        .option-btn.selected-wrong { background-color: #f44336 !important; color: white; border-color: #f44336; }
+        .explanation {
+            margin-top: 15px;
+            padding: 12px;
+            background: #fff;
+            border-radius: 6px;
+            border: 1px dashed #ccc;
+            display: none;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        #score-board {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 30px;
+            padding: 20px;
+            background: #e1f5fe;
+            border-radius: 8px;
+            color: #0288d1;
+            display: none;
+        }
+        .submit-btn {
+            display: block;
+            width: 200px;
+            margin: 30px auto 0;
+            padding: 12px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .submit-btn:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧬 4-1 生物生存的環境與生態系層次測驗</h1>
+    <div id="quiz-container"></div>
+    <button class="submit-btn" id="submit-btn" onclick="calculateScore()">交卷看分數</button>
+    <div id="score-board"></div>
+</div>
+
+<script>
+const quizData = [
+    {
+        q: "1. 根據課文內容，科學家將生物在地球上生存與活動的範圍稱為什麼？",
+        hint: "提示：這個概念包含了水域、低層大氣及地表等有生物足跡的區域。",
+        options: ["生態系", "生物圈", "群集", "族群"],
+        answer: 1,
+        msg: "答案是生物圈！包含水域、低層大氣及地表等區域。生態系還需要包含非生物因子才算。"
+    },
+    {
+        q: "2. 關於生物圈的範圍，通常是以海平面為基準，垂直向上與向下各約多少公里的範圍？",
+        hint: "提示：請參考課本中「生物圈範圍示意圖」所標示的紅色雙向箭頭數值。",
+        options: ["100公里", "1公里", "10公里", "6370公里"],
+        answer: 2,
+        msg: "答案是10公里！上下各10公里總計約20公里。6370公里大約是地球的半徑。"
+    },
+    {
+        q: "3. 生物圈的範圍如果和整個地球的半徑（約6370公里）相比，其厚度大約像下列哪一種比喻？",
+        hint: "提示：課本漫畫中的男同學拿著一顆水果，並提到其結構分布的比例極為相似。",
+        options: ["西瓜的果肉", "蘋果的果皮", "雞蛋的蛋黃", "柳丁的果核"],
+        answer: 1,
+        msg: "答案是蘋果的果皮！兩萬公尺（20公里）的生物圈範圍相較於地球半徑，就像薄薄的蘋果皮。"
+    },
+    {
+        q: "4. 關於生物圈範圍的敘述，下列何者正確？",
+        hint: "提示：請思考課本第120頁「觀念速記」所探討的問題，生物的發現或滅絕會如何影響範圍。",
+        options: ["生物圈的範圍是固定不變的", "海平面垂直向上10公里即為生物圈的全部範圍", "生物圈的範圍可能會隨生物分布而變動", "地球上所有環境的生物分布都非常均勻"],
+        answer: 3,
+        msg: "答案是(C)！隨著新生物的發現或滅絕，生物圈的範圍可能會隨之擴大或縮小，並非永久固定。"
+    },
+    {
+        q: "5. 在生態學的組成層次中，最基本的單位是什麼？",
+        hint: "提示：請參考課本第121頁右側「生態系的組成層次」圖表最頂端、結構最單純的層次。",
+        options: ["族群", "群集", "生態系", "個體"],
+        answer: 3,
+        msg: "答案是個體！生態系組成的金字塔基層依序是：個體 → 族群 → 群集 → 生態系。"
+    },
+    {
+        q: "6. 下列哪一個組合符合生態學中「族群」的定義？",
+        hint: "提示：族群的定義必須同時滿足三個條件：同一時間、同一地點、以及「同種」生物。",
+        options: ["阿里山上的所有植物", "七家灣溪裡的櫻花鉤吻鮭", "澎湖海域的所有魚類", "一座森林裡的所有赤腹松鼠、寬尾鳳蝶與黃山雀"],
+        answer: 1,
+        msg: "答案是(B)！它滿足了同一時間、地點且為「同種」生物（櫻花鉤吻鮭）的集合。其他選項都包含多個物種，屬於群集。"
+    },
+    {
+        q: "7. 當我們在討論「同一時期在同一環境中所有生物族群的集合」時，是指哪一個組成層次？",
+        hint: "提示：這個層次強調的是特定環境中「多種生物族群」住在一起的狀態，尚未加入非生物因子。",
+        options: ["群集", "個體", "族群", "生態系"],
+        answer: 0,
+        msg: "答案是群集（生物群落）！指特定區域內生活的所有生物族群的集合。"
+    },
+    {
+        q: "8. 根據課文，一個完整的「生態系」包含了哪兩個主要部分？",
+        hint: "提示：請閱讀第121頁「2 生態系的組成層次」課文第一句或最下方的綠色粗體字小結。",
+        options: ["環境與非生物因子", "動物與植物", "環境與生物", "族群與群集"],
+        answer: 2,
+        msg: "答案是環境與生物！生態系是由「環境（非生物因子）」與「生物（群集）」兩個部分交互作用而成。"
+    },
+    {
+        q: "9. 下列何者屬於生態系中的「非生物因子」？",
+        hint: "提示：非生物因子指的是環境中沒有生命，但會影響生物生存的物理或環境因素。",
+        options: ["臺灣落葉樹", "陽光與土壤", "赤腹松鼠族群", "寬尾鳳蝶的幼蟲"],
+        answer: 1,
+        msg: "答案是陽光與土壤！氣溫、水質、土壤、光照等無生命物質或條件，稱為非生物因子。"
+    },
+    {
+        q: "10. 若將課本提到的概念依據「結構複雜度與範圍大小」由小到大排列，下列何者正確？",
+        hint: "提示：回想課本第121頁右側圖表的箭頭方向，從最上面的單隻松鼠到最下面的整個森林圖示。",
+        options: ["個體 → 群集 → 族群 → 生態系", "個體 → 族群 → 群集 → 生態系", "生態系 → 群集 → 族群 → 個體", "族群 → 個體 → 生態系 → 群集"],
+        answer: 1,
+        msg: "答案是(B)！正確的生態學層次由小到大為：個體 → 族群 → 群集 → 生態系。"
+    }
+];
+
+const container = document.getElementById('quiz-container');
+const userAnswers = new Array(quizData.length).fill(null);
+
+// 渲染題目
+quizData.forEach((item, qIdx) => {
+    const quizItem = document.createElement('div');
+    quizItem.className = 'quiz-item';
+    quizItem.id = `quiz-${qIdx}`;
+
+    const qText = document.createElement('div');
+    qText.className = 'question';
+    qText.innerText = item.q;
+    quizItem.appendChild(qText);
+
+    const hintText = document.createElement('div');
+    hintText.className = 'hint';
+    hintText.innerText = item.hint;
+    quizItem.appendChild(hintText);
+
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'options';
+
+    item.options.forEach((opt, oIdx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => selectOption(qIdx, oIdx, btn);
+        optionsDiv.appendChild(btn);
+    });
+
+    quizItem.appendChild(optionsDiv);
+
+    const expDiv = document.createElement('div');
+    expDiv.className = 'explanation';
+    expDiv.id = `exp-${qIdx}`;
+    expDiv.innerText = item.msg;
+    quizItem.appendChild(expDiv);
+
+    container.appendChild(quizItem);
+});
+
+function selectOption(qIdx, oIdx, clickedBtn) {
+    userAnswers[qIdx] = oIdx;
+    const parent = clickedBtn.parentElement;
+    const buttons = parent.getElementsByClassName('option-btn');
+    for (let btn of buttons) {
+        btn.style.background = '#fff';
+        btn.style.color = '#333';
+        btn.style.borderColor = '#dcdde1';
+    }
+    clickedBtn.style.background = '#e1f5fe';
+    clickedBtn.style.borderColor = '#29b6f6';
+}
+
+function calculateScore() {
+    let score = 0;
+    quizData.forEach((item, qIdx) => {
+        const quizItem = document.getElementById(`quiz-${qIdx}`);
+        const expDiv = document.getElementById(`exp-${qIdx}`);
+        const buttons = quizItem.getElementsByClassName('option-btn');
+        
+        expDiv.style.display = 'block'; // 顯示詳解
+        
+        for (let btn of buttons) {
+            btn.disabled = true; // 鎖定按鈕
+        }
+
+        if (userAnswers[qIdx] === item.answer) {
+            score += 10;
+            quizItem.className = 'quiz-item correct';
+            if(userAnswers[qIdx] !== null) buttons[userAnswers[qIdx]].className = 'option-btn selected-correct';
+        } else {
+            quizItem.className = 'quiz-item wrong';
+            if(userAnswers[qIdx] !== null) buttons[userAnswers[qIdx]].className = 'option-btn selected-wrong';
+            buttons[item.answer].className = 'option-btn selected-correct';
+        }
+    });
+
+    const scoreBoard = document.getElementById('score-board');
+    scoreBoard.style.display = 'block';
+    scoreBoard.innerText = `測驗結束！您的總分為：${score} 分 / 100 分`;
+    document.getElementById('submit-btn').style.display = 'none';
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>
